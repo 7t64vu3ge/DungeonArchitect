@@ -1,9 +1,7 @@
 
----
+<!-- ## 📄 `sequenceDiagram.md` -->
 
-## 📄 `sequenceDiagram.md`
 
-```md
 # Sequence Diagram – Main Game Flow
 
 ```mermaid
