@@ -1,79 +1,54 @@
-# 🏰 Dungeon Architect – Multiplayer Card-Based Strategy Game
+# Dungeon Architect – Project Idea
 
-## Concept
-Dungeon Architect is a real-time / turn-based multiplayer card game where players build their own dungeon using cards while sabotaging opponents.
+## Overview
+Dungeon Architect is a real-time / turn-based multiplayer card game where players design and expand their own dungeon using strategic cards while sabotaging opponents. Players place rooms, traps, and monsters to strengthen their dungeon and use disaster cards to damage rival dungeons. The last dungeon standing wins.
 
-Players strategically place rooms, traps, and monsters while deploying disaster cards to damage rival dungeons. The last dungeon standing wins.
+## Scope
+This is a full-stack application with backend as the main focus. The backend will manage:
+- Authentication & authorization
+- Multiplayer game sessions
+- Real-time game state updates
+- Card logic & validation
+- Matchmaking & lobby system
+- Turn management
+- Game logs & replays
 
----
+Frontend will handle:
+- Game UI
+- Dungeon visualization
+- Player actions
+- Live updates via WebSockets
 
-## Core Mechanics
-- Multiplayer game rooms (2–4 players)
-- Turn-based card play
-- Dungeon building using Room Cards
-- Player sabotage using Trap / Monster / Disaster cards
-- Health-based dungeon destruction
-- Real-time updates via WebSockets
+## Key Features
+- User registration & login
+- Lobby & matchmaking
+- Multiplayer matches
+- Turn-based / real-time gameplay
+- Card system (rooms, traps, monsters, disasters)
+- Dungeon health & win condition
+- Realtime sync
+- Leaderboard & stats
 
----
+## Tech Stack (Proposed)
+Backend:
+- Node.js (Express / NestJS)
+- WebSockets (Socket.IO)
+- PostgreSQL / MongoDB
+- JWT Auth
 
-## Tech Stack
-### Frontend
-- React + TypeScript
-- WebSockets for real-time updates
-- Game board UI
-- Lobby system
+Frontend:
+- React
+- TailwindCSS
 
-### Backend
-- Express + TypeScript
-- WebSocket server
-- Game engine (server authoritative)
-- Matchmaking service
-- In-memory game state (Redis later)
+## Architecture Principles
+- Layered architecture (controllers, services, repositories)
+- OOP principles
+- Factory Pattern for card creation
+- Observer Pattern for game state updates
+- Singleton Game Engine
 
----
-
-## OOP Architecture
-- Abstract Card base class
-- Specialized card types (Trap, Monster, Disaster, Room)
-- GameRoom manages state & turn order
-- Dungeon composed of DungeonRooms
-- Effect pipeline for resolving card effects
-
----
-
-## Advanced Features
-- Match replays (event sourcing)
-- Reconnection handling
-- Anti-cheat validation (server authority)
-- Bot players
-- Ranked matchmaking
+## Future Scope
+- AI bots
+- Ranked matches
 - Spectator mode
-
----
-
-## Future Improvements
-- Deck building system
-- Player progression & XP
-- Card rarity & upgrades
-- AI dungeon defenders
-- Tournament mode
-
----
-
-## Learning Outcomes
-- Multiplayer architecture
-- WebSocket protocol design
-- OOP design patterns
-- Game state synchronization
-- Backend-heavy system design
-- Clean architecture with TypeScript
-
----
-
-## UML & Diagrams
-See `/docs/diagrams.md` for:
-- Class Diagram
-- Sequence Diagram
-- Use Case Diagram
-- ER Diagram
+- Card marketplace
