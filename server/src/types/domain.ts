@@ -9,12 +9,26 @@ export interface User {
   passwordHash: string;
 }
 
+export interface UnitStats {
+  hp: number;
+  damage?: number;
+  range?: number;
+  attackSpeed?: number;
+  spawnCount?: number;
+  favoriteTarget?: string;
+  ability?: string;
+  disability?: string;
+  distractedBy?: string;
+}
+
 export interface Card {
   id: number;
   name: string;
   type: CardType;
+  subType?: "defense" | "attack";
   cost: number;
   description?: string;
+  unitStats?: UnitStats;
 }
 
 export interface DeckCard {
