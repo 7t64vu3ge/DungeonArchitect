@@ -64,6 +64,10 @@ export function useSocket(token: string | null) {
     socketRef.current?.emit("place-defense", { slotIndex, cardId });
   }, []);
 
+  const placeCastle = useCallback((slotIndex: number) => {
+    socketRef.current?.emit("place-castle", { slotIndex });
+  }, []);
+
   const playerReady = useCallback(() => {
     socketRef.current?.emit("player-ready");
   }, []);
@@ -81,6 +85,7 @@ export function useSocket(token: string | null) {
     joinQueue,
     leaveQueue,
     placeDefense,
+    placeCastle,
     playerReady,
     placeAttacker,
   };

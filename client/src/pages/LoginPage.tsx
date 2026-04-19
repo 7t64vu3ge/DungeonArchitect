@@ -25,7 +25,7 @@ export default function LoginPage({ onLogin, onRegister, error, loading }: Login
   return (
     <div className="page-center">
       <div className="auth-container card-panel">
-        <h1 className="auth-title">⚔️ Dungeon Architect</h1>
+        <h1 className="auth-title">Dungeon Architect</h1>
         <p className="auth-subtitle">
           {isRegister ? "Create your account" : "Welcome back, Architect"}
         </p>

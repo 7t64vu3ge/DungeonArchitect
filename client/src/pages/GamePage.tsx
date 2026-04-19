@@ -8,14 +8,16 @@ interface GamePageProps {
   userId: string;
   cardsCatalog: { defense: Card[]; attack: Card[] } | null;
   onPlaceDefense: (slotIndex: number, cardId: number) => void;
+  onPlaceCastle: (slotIndex: number) => void;
   onPlayerReady: () => void;
   onPlaceAttacker: (cardId: number, targetSlotIndex: number) => void;
+  onRefreshProfile: () => void;
   onBackToLobby: () => void;
 }
 
 export default function GamePage({
   gameState, userId, cardsCatalog,
-  onPlaceDefense, onPlayerReady, onPlaceAttacker, onBackToLobby,
+  onPlaceDefense, onPlaceCastle, onPlayerReady, onPlaceAttacker, onRefreshProfile, onBackToLobby,
 }: GamePageProps) {
   const [timeLeft, setTimeLeft] = useState(30);
 
@@ -28,7 +30,7 @@ export default function GamePage({
     [gameState, userId]
   );
 
-  // Setup countdown timer
+
   useEffect(() => {
     if (gameState.phase !== "setup") return;
     const interval = setInterval(() => {
@@ -38,17 +40,23 @@ export default function GamePage({
     return () => clearInterval(interval);
   }, [gameState.phase, gameState.setupDeadline]);
 
+  useEffect(() => {
+    if (gameState.phase === "finished") {
+      onRefreshProfile();
+    }
+  }, [gameState.phase, onRefreshProfile]);
+
   if (!myPlayer || !opponent) {
     return <div className="page-center"><p>Loading game...</p></div>;
   }
 
-  // ── FINISHED ─────────────────────────────────
+
   if (gameState.phase === "finished") {
     const isWinner = gameState.winnerId === userId;
     return (
       <div className="winner-overlay">
         <div className="winner-text">
-          {isWinner ? "🏆 VICTORY!" : "💀 DEFEAT"}
+          {isWinner ? "VICTORY!" : "DEFEAT"}
         </div>
         <p style={{ color: "var(--text-secondary)", marginBottom: 32, fontSize: "1.1rem" }}>
           {isWinner
@@ -62,12 +70,12 @@ export default function GamePage({
     );
   }
 
-  // ── SETUP PHASE ──────────────────────────────
+
   if (gameState.phase === "setup") {
     return (
       <div className="page-center game-background" style={{ gap: 20 }}>
         <h2 style={{ fontFamily: "var(--font-heading)", color: "var(--text-primary)" }}>
-          ⚒️ Setup Phase
+          Setup Phase
         </h2>
         <p style={{ color: "var(--text-secondary)", textAlign: "center" }}>
           Place defenses on your board • You vs <strong>{opponent.username}</strong>
@@ -79,8 +87,10 @@ export default function GamePage({
 
         <SetupBoard
           board={myPlayer.board}
+          castleSlotIndex={myPlayer.castleSlotIndex}
           defenseCards={cardsCatalog?.defense ?? []}
           onPlaceDefense={onPlaceDefense}
+          onPlaceCastle={onPlaceCastle}
           isReady={myPlayer.isReady}
         />
 
@@ -90,7 +100,7 @@ export default function GamePage({
             onClick={onPlayerReady}
             disabled={myPlayer.isReady}
           >
-            {myPlayer.isReady ? "Waiting for opponent..." : "✅ Ready!"}
+            {myPlayer.isReady ? "Waiting for opponent..." : "Ready!"}
           </button>
         </div>
 
@@ -103,7 +113,7 @@ export default function GamePage({
     );
   }
 
-  // ── BATTLE PHASE ─────────────────────────────
+
   return (
     <div className="game-background" style={{ padding: 16 }}>
       <BattleArena

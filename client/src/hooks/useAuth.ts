@@ -56,6 +56,21 @@ export function useAuth() {
     }
   }, []);
 
+  const refreshProfile = useCallback(async () => {
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_BASE}/me`, {
+        headers: { "Authorization": `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to refresh profile");
+      localStorage.setItem("da_user", JSON.stringify(data));
+      setUser(data);
+    } catch (err: any) {
+      console.error("Profile refresh failed:", err.message);
+    }
+  }, [token]);
+
   const logout = useCallback(() => {
     localStorage.removeItem("da_token");
     localStorage.removeItem("da_user");
@@ -63,5 +78,5 @@ export function useAuth() {
     setUser(null);
   }, []);
 
-  return { token, user, error, loading, login, register, logout };
+  return { token, user, error, loading, login, register, logout, refreshProfile };
 }

@@ -58,6 +58,7 @@ export interface PlayerState {
   board: BoardSlot[];     // 6 slots (3×2 grid)
   castleHp: number;
   maxCastleHp: number;
+  castleSlotIndex: number | null; // which of the 9 slots holds the castle
   mana: number;
   maxMana: number;
   isReady: boolean;       // finished setup?

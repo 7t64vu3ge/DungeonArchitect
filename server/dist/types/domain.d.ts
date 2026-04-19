@@ -44,6 +44,7 @@ export interface PlayerState {
     board: BoardSlot[];
     castleHp: number;
     maxCastleHp: number;
+    castleSlotIndex: number | null;
     mana: number;
     maxMana: number;
     isReady: boolean;

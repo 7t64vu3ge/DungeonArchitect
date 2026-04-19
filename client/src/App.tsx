@@ -8,7 +8,7 @@ export default function App() {
   const auth = useAuth();
   const socket = useSocket(auth.token);
 
-  // Not logged in → show login
+
   if (!auth.token || !auth.user) {
     return (
       <LoginPage
@@ -20,7 +20,7 @@ export default function App() {
     );
   }
 
-  // In a game → show game
+
   if (socket.gameState) {
     return (
       <GamePage
@@ -28,14 +28,16 @@ export default function App() {
         userId={auth.user.id}
         cardsCatalog={socket.cardsCatalog}
         onPlaceDefense={socket.placeDefense}
+        onPlaceCastle={socket.placeCastle}
         onPlayerReady={socket.playerReady}
         onPlaceAttacker={socket.placeAttacker}
+        onRefreshProfile={auth.refreshProfile}
         onBackToLobby={() => window.location.reload()}
       />
     );
   }
 
-  // Logged in, no game → show lobby
+
   return (
     <LobbyPage
       user={auth.user}

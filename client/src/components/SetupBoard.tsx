@@ -3,17 +3,23 @@ import { BoardSlot, Card } from "../types/game";
 
 interface SetupBoardProps {
   board: BoardSlot[];
+  castleSlotIndex: number | null;
   defenseCards: Card[];
   onPlaceDefense: (slotIndex: number, cardId: number) => void;
+  onPlaceCastle: (slotIndex: number) => void;
   isReady: boolean;
 }
 
-export default function SetupBoard({ board, defenseCards, onPlaceDefense, isReady }: SetupBoardProps) {
-  const [selectedCard, setSelectedCard] = useState<Card | null>(null);
+export default function SetupBoard({ board, castleSlotIndex, defenseCards, onPlaceDefense, onPlaceCastle, isReady }: SetupBoardProps) {
+  const [selectedCard, setSelectedCard] = useState<Card | "castle" | null>(null);
 
   const handleSlotClick = (slotIndex: number) => {
     if (isReady || !selectedCard) return;
-    onPlaceDefense(slotIndex, selectedCard.id);
+    if (selectedCard === "castle") {
+      onPlaceCastle(slotIndex);
+    } else {
+      onPlaceDefense(slotIndex, selectedCard.id);
+    }
   };
 
   const getCardForSlot = (slot: BoardSlot): Card | undefined => {
@@ -34,7 +40,7 @@ export default function SetupBoard({ board, defenseCards, onPlaceDefense, isRead
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, width: "100%", maxWidth: 600 }}>
-      {/* Board Grid */}
+
       <div className="board-grid">
         {board.map((slot, i) => {
           const card = getCardForSlot(slot);
@@ -42,12 +48,12 @@ export default function SetupBoard({ board, defenseCards, onPlaceDefense, isRead
           return (
             <div
               key={i}
-              className={`board-slot ${card ? "filled" : ""} ${i === 0 ? "castle-slot" : ""}`}
+              className={`board-slot ${card ? "filled" : ""} ${i === castleSlotIndex ? "castle-slot" : ""}`}
               onClick={() => handleSlotClick(i)}
               title={card ? `${card.name} — HP: ${slot.currentHp}/${slot.maxHp}` : `Slot ${i} — Click to place`}
             >
-              {i === 0 && !card && (
-                <span style={{ fontSize: "1.5rem" }}>🏰</span>
+              {i === castleSlotIndex && !card && (
+                <span style={{ fontSize: "1.2rem", fontWeight: "bold" }}>Castle</span>
               )}
               {card && (
                 <>
@@ -74,10 +80,10 @@ export default function SetupBoard({ board, defenseCards, onPlaceDefense, isRead
                     src="/assets/cards/card_holder.png" 
                     alt="Empty Slot" 
                     className="slot-image" 
-                    style={{ opacity: 0.5, width: "64px", height: "64px" }} 
+                    style={{ opacity: 0.5, width: "85px", height: "85px", objectFit: "contain" }} 
                   />
                   <span style={{ fontSize: "0.7rem", color: "var(--text-muted)", position: "absolute", bottom: "8px" }}>
-                    {selectedCard ? "Click to place" : "Empty"}
+                    {selectedCard === "castle" ? "Place Castle" : (selectedCard ? "Click to place" : "Empty")}
                   </span>
                 </>
               )}
@@ -86,17 +92,26 @@ export default function SetupBoard({ board, defenseCards, onPlaceDefense, isRead
         })}
       </div>
 
-      {/* Card Picker */}
+
       {!isReady && (
         <>
           <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>
-            Select a defense card, then click a slot to place it:
+            Select a defense card, then click a slot to place it (You MUST place your Castle!):
           </p>
           <div className="card-picker">
+            <div
+              className={`game-card ${selectedCard === "castle" ? "selected" : ""}`}
+              onClick={() => setSelectedCard("castle")}
+            >
+              <div style={{ fontSize: "1.2rem", fontWeight: "bold", height: "64px", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "6px" }}>Castle</div>
+              <div className="card-name">Your Castle</div>
+              <div className="card-cost">Free</div>
+              <div className="card-stats">Place this first!</div>
+            </div>
             {defenseCards.map(card => (
               <div
                 key={card.id}
-                className={`game-card ${selectedCard?.id === card.id ? "selected" : ""}`}
+                className={`game-card ${typeof selectedCard === "object" && selectedCard?.id === card.id ? "selected" : ""}`}
                 onClick={() => setSelectedCard(card)}
               >
                 <img

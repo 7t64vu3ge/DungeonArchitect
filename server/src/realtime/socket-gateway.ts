@@ -1,29 +1,25 @@
 import { Server, Socket } from "socket.io";
 import jwt from "jsonwebtoken";
-import { GameEngine } from "../engine/core/game-engine";
+import { GameEngineService } from "../engine/core/game-engine";
 import { GameState } from "../types/domain";
 import { DEFENSE_CARDS, ATTACK_CARDS } from "../engine/cards/unit-registry";
 import { Game } from "../database/models/Game";
 import { User } from "../database/models/User";
+import { IMatchmakingService, MatchmakingService } from "../services/matchmaking.service";
+import { IGameSessionService, GameSessionService } from "../services/game-session.service";
+import { CombatSystem } from "../engine/systems/combat.system";
+import { ManaSystem } from "../engine/systems/mana.system";
+import { GameTickOrchestrator } from "../engine/systems/game-tick.orchestrator";
 
-interface QueuePlayer {
-  socketId: string;
-  userId: string;
-  username: string;
-}
-
-// ── In-memory stores ────────────────────────
-const matchQueue: QueuePlayer[] = [];
-const activeGames: Map<string, GameState> = new Map();
-const playerToGame: Map<string, string> = new Map(); // usedId -> gameId
+const tickIntervals: Map<string, NodeJS.Timeout> = new Map();
 const socketToUser: Map<string, { userId: string; username: string }> = new Map();
 
-// ── Tick intervals per game ─────────────────
-const tickIntervals: Map<string, NodeJS.Timeout> = new Map();
-
 export function initSocketGateway(io: Server) {
+  const matchmakingService: IMatchmakingService = new MatchmakingService();
+  const gameSessionService: IGameSessionService = new GameSessionService();
+  const gameEngine = new GameEngineService(new GameTickOrchestrator(new ManaSystem(), new CombatSystem()));
+  const usernameMap: Map<string, string> = new Map();
 
-  // ── Auth middleware ─────────────────────────
   io.use((socket, next) => {
     const token = socket.handshake.auth?.token;
     if (!token) return next(new Error("No token"));
@@ -44,88 +40,91 @@ export function initSocketGateway(io: Server) {
     const userId = (socket as any).userId as string;
     const username = (socket as any).username as string;
     socketToUser.set(socket.id, { userId, username });
+    usernameMap.set(userId, username);
 
     console.log(`[Socket] ${username} connected (${socket.id})`);
 
-    // ── Join Queue ────────────────────────────
     socket.on("join-queue", () => {
-      // Don't let them queue twice
-      if (matchQueue.find(p => p.userId === userId)) return;
-      // Don't let them queue if already in game
-      if (playerToGame.has(userId)) {
+      if (matchmakingService.isInQueue(userId)) return;
+      if (gameSessionService.getGameIdForPlayer(userId)) {
         socket.emit("error-msg", "You are already in a game");
         return;
       }
 
-      matchQueue.push({ socketId: socket.id, userId, username });
-      socket.emit("queue-status", { position: matchQueue.length });
-      console.log(`[Queue] ${username} joined (${matchQueue.length} in queue)`);
+      matchmakingService.addToQueue(userId);
+      socket.emit("queue-status", { position: 1 });
+      console.log(`[Queue] ${username} joined`);
 
-      // Try to match
-      if (matchQueue.length >= 2) {
-        const p1 = matchQueue.shift()!;
-        const p2 = matchQueue.shift()!;
-        startGame(io, p1, p2);
+      const match = matchmakingService.findMatch();
+      if (match) {
+        startGame(io, match[0], usernameMap.get(match[0])!, match[1], usernameMap.get(match[1])!, match[0], match[1], gameEngine, gameSessionService);
       }
     });
 
-    // ── Leave Queue ───────────────────────────
     socket.on("leave-queue", () => {
-      const idx = matchQueue.findIndex(p => p.userId === userId);
-      if (idx !== -1) matchQueue.splice(idx, 1);
+      matchmakingService.removeFromQueue(userId);
     });
 
-    // ── Place Defense ─────────────────────────
     socket.on("place-defense", (data: { slotIndex: number; cardId: number }) => {
-      const gameId = playerToGame.get(userId);
+      const gameId = gameSessionService.getGameIdForPlayer(userId);
       if (!gameId) return;
-      const state = activeGames.get(gameId);
+      const state = gameSessionService.getSession(gameId);
       if (!state) return;
 
       try {
-        GameEngine.placeDefense(state, userId, data.slotIndex, data.cardId);
+        gameEngine.placeDefense(state, userId, data.slotIndex, data.cardId);
         broadcastState(io, state);
       } catch (err: any) {
         socket.emit("error-msg", err.message);
       }
     });
 
-    // ── Player Ready ──────────────────────────
-    socket.on("player-ready", () => {
-      const gameId = playerToGame.get(userId);
+    socket.on("place-castle", (data: { slotIndex: number }) => {
+      const gameId = gameSessionService.getGameIdForPlayer(userId);
       if (!gameId) return;
-      const state = activeGames.get(gameId);
+      const state = gameSessionService.getSession(gameId);
       if (!state) return;
 
       try {
-        GameEngine.setPlayerReady(state, userId);
+        gameEngine.placeCastle(state, userId, data.slotIndex);
+        broadcastState(io, state);
+      } catch (err: any) {
+        socket.emit("error-msg", err.message);
+      }
+    });
+
+    socket.on("player-ready", () => {
+      const gameId = gameSessionService.getGameIdForPlayer(userId);
+      if (!gameId) return;
+      const state = gameSessionService.getSession(gameId);
+      if (!state) return;
+
+      try {
+        gameEngine.setPlayerReady(state, userId);
         broadcastState(io, state);
 
-        // If battle started, begin tick loop
         if (state.phase === "battle" && !tickIntervals.has(gameId)) {
-          startTickLoop(io, gameId);
+          startTickLoop(io, gameId, gameEngine, gameSessionService);
         }
       } catch (err: any) {
         socket.emit("error-msg", err.message);
       }
     });
 
-    // ── Place Attacker ────────────────────────
     socket.on("place-attacker", (data: { cardId: number; targetSlotIndex: number }) => {
-      const gameId = playerToGame.get(userId);
+      const gameId = gameSessionService.getGameIdForPlayer(userId);
       if (!gameId) return;
-      const state = activeGames.get(gameId);
+      const state = gameSessionService.getSession(gameId);
       if (!state) return;
 
       try {
-        GameEngine.placeAttacker(state, userId, data.cardId, data.targetSlotIndex);
+        gameEngine.placeAttacker(state, userId, data.cardId, data.targetSlotIndex);
         broadcastState(io, state);
       } catch (err: any) {
         socket.emit("error-msg", err.message);
       }
     });
 
-    // ── Get card catalogs ─────────────────────
     socket.on("get-cards", () => {
       socket.emit("cards-catalog", {
         defense: DEFENSE_CARDS,
@@ -133,19 +132,15 @@ export function initSocketGateway(io: Server) {
       });
     });
 
-    // ── Disconnect ────────────────────────────
     socket.on("disconnect", () => {
       console.log(`[Socket] ${username} disconnected`);
       socketToUser.delete(socket.id);
 
-      // Remove from queue
-      const idx = matchQueue.findIndex(p => p.userId === userId);
-      if (idx !== -1) matchQueue.splice(idx, 1);
+      matchmakingService.removeFromQueue(userId);
 
-      // Handle game abandonment
-      const gameId = playerToGame.get(userId);
+      const gameId = gameSessionService.getGameIdForPlayer(userId);
       if (gameId) {
-        const state = activeGames.get(gameId);
+        const state = gameSessionService.getSession(gameId);
         if (state && state.phase !== "finished") {
           state.phase = "finished";
           const winner = state.players.find(p => p.userId !== userId);
@@ -155,86 +150,85 @@ export function initSocketGateway(io: Server) {
             message: `${username} disconnected. ${winner?.username} wins!`,
           });
           broadcastState(io, state);
-          cleanupGame(gameId);
+          cleanupGame(gameId, gameSessionService);
         }
       }
     });
   });
 }
 
-// ── Start a game between two players ────────
-async function startGame(io: Server, p1: QueuePlayer, p2: QueuePlayer) {
-  const state = GameEngine.createGame(p1.userId, p1.username, p2.userId, p2.username);
-  activeGames.set(state.gameId, state);
-  playerToGame.set(p1.userId, state.gameId);
-  playerToGame.set(p2.userId, state.gameId);
+async function startGame(
+  io: Server,
+  p1Id: string, p1Name: string,
+  p2Id: string, p2Name: string,
+  p1SocketId: string, p2SocketId: string, 
+  gameEngine: GameEngineService,
+  gameSessionService: IGameSessionService
+) {
+  const state = gameEngine.createGame(p1Id, p1Name, p2Id, p2Name);
+  gameSessionService.createSession(state);
+  gameSessionService.mapPlayerToGame(p1Id, state.gameId);
+  gameSessionService.mapPlayerToGame(p2Id, state.gameId);
 
-  // Save game to DB
   try {
     await Game.create({
       gameId: state.gameId,
-      playerIds: [p1.userId, p2.userId],
+      playerIds: [p1Id, p2Id],
       phase: "setup",
     });
-  } catch { /* OK if fails, game still works in memory */ }
+  } catch {}
 
-  // Put both sockets in a room
-  const p1Socket = io.sockets.sockets.get(p1.socketId);
-  const p2Socket = io.sockets.sockets.get(p2.socketId);
-  p1Socket?.join(state.gameId);
-  p2Socket?.join(state.gameId);
+  const p1Socket = Array.from(io.sockets.sockets.values()).find(s => (s as any).userId === p1Id);
+  const p2Socket = Array.from(io.sockets.sockets.values()).find(s => (s as any).userId === p2Id);
+  
+  if (p1Socket) p1Socket.join(state.gameId);
+  if (p2Socket) p2Socket.join(state.gameId);
 
-  console.log(`[Game] Started ${state.gameId}: ${p1.username} vs ${p2.username}`);
-
+  console.log(`[Game] Started ${state.gameId}: ${p1Name} vs ${p2Name}`);
   broadcastState(io, state);
 
-  // Setup timer — force battle start after 30s
   setTimeout(() => {
-    const currentState = activeGames.get(state.gameId);
+    const currentState = gameSessionService.getSession(state.gameId);
     if (currentState && currentState.phase === "setup") {
-      GameEngine.startBattle(currentState);
+      gameEngine.startBattle(currentState);
       broadcastState(io, currentState);
       if (!tickIntervals.has(state.gameId)) {
-        startTickLoop(io, state.gameId);
+        startTickLoop(io, state.gameId, gameEngine, gameSessionService);
       }
     }
   }, 30000);
 }
 
-// ── Tick loop for combat ────────────────────
-function startTickLoop(io: Server, gameId: string) {
+function startTickLoop(io: Server, gameId: string, gameEngine: GameEngineService, gameSessionService: IGameSessionService) {
   const interval = setInterval(() => {
-    const state = activeGames.get(gameId);
+    const state = gameSessionService.getSession(gameId);
     if (!state || state.phase !== "battle") {
       clearInterval(interval);
       tickIntervals.delete(gameId);
       return;
     }
 
-    GameEngine.tick(state);
+    gameEngine.tick(state);
     broadcastState(io, state);
 
-    if (GameEngine.isFinished(state)) {
+    if (gameEngine.isFinished(state)) {
       clearInterval(interval);
       tickIntervals.delete(gameId);
-      cleanupGame(gameId);
+      cleanupGame(gameId, gameSessionService);
     }
-  }, 500); // tick every 500ms for network efficiency
+  }, 500);
 
   tickIntervals.set(gameId, interval);
 }
 
-// ── Broadcast state to all players in room ──
 function broadcastState(io: Server, state: GameState) {
   io.to(state.gameId).emit("game-state", state);
 }
 
-// ── Cleanup after game ends ─────────────────
-async function cleanupGame(gameId: string) {
-  const state = activeGames.get(gameId);
+async function cleanupGame(gameId: string, gameSessionService: IGameSessionService) {
+  const state = gameSessionService.getSession(gameId);
   if (!state) return;
 
-  // Persist final state
   try {
     await Game.findOneAndUpdate({ gameId }, {
       phase: "finished",
@@ -243,11 +237,12 @@ async function cleanupGame(gameId: string) {
       endedAt: new Date(),
     });
 
-    // Update user stats
     if (state.winnerId) {
+      console.log(`[Game] Recording win for ${state.winnerId}`);
       await User.findByIdAndUpdate(state.winnerId, { $inc: { wins: 1 } });
       const loserId = state.players.find(p => p.userId !== state.winnerId)?.userId;
       if (loserId) {
+        console.log(`[Game] Recording loss for ${loserId}`);
         await User.findByIdAndUpdate(loserId, { $inc: { losses: 1 } });
       }
     }
@@ -255,11 +250,10 @@ async function cleanupGame(gameId: string) {
     console.error("[DB] Failed to persist game result:", err);
   }
 
-  // Clean up maps after a delay (let clients see final state)
   setTimeout(() => {
     for (const p of state.players) {
-      playerToGame.delete(p.userId);
+      gameSessionService.unmapPlayer(p.userId);
     }
-    activeGames.delete(gameId);
+    gameSessionService.removeSession(gameId);
   }, 5000);
 }

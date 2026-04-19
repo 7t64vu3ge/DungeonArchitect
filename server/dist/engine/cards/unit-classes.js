@@ -20,7 +20,7 @@ class BaseUnit {
         return "/assets/cards/placeholders/trap.png";
     }
     getAttackInterval() {
-        return (this.unitStats.attackSpeed ?? 2) * 1000; // convert to ms
+        return (this.unitStats.attackSpeed ?? 2) * 1000;
     }
 }
 exports.BaseUnit = BaseUnit;

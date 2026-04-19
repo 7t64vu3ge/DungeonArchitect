@@ -219,10 +219,10 @@ h1, h2, h3 {
 .board-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(2, 1fr);
+  grid-template-rows: repeat(3, 1fr);
   gap: 8px;
   width: 100%;
-  max-width: 420px;
+  max-width: 480px;
 }
 
 .board-slot {

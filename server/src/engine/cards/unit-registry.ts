@@ -1,17 +1,7 @@
 import { Card } from "../../types/domain";
 import { Wall, Attacker, Defender } from "./unit-classes";
 
-// ── All cards in the game ───────────────────
-// Sprite mapping:
-//   common: archer, goblin, knight, medic, spearmen, ice_tower
-//   rare: battleram, cavalryrider, firethrower, shieldguard, mortar, tesla_coil
-//   epic: assassins, catapult, warelephant, inferno_tower
-//   placeholders: wall, attack, trap
-
 const ALL_CARDS: Card[] = [
-  // ═══════════════════════════════════════════
-  // DEFENSE CARDS
-  // ═══════════════════════════════════════════
   new Wall(1, "Wooden Barricade", 1, "Blocks movement paths cheaply.", {
     hp: 350, damage: 0, attackSpeed: 0,
     ability: "Blocks movement.", disability: "Weak vs siege.", distractedBy: "None"
@@ -57,9 +47,7 @@ const ALL_CARDS: Card[] = [
     ability: "Slows 35%.", disability: "Very low damage.", distractedBy: "Closest."
   }, "/assets/cards/common/ice_tower.png"),
 
-  // ═══════════════════════════════════════════
-  // ATTACK CARDS
-  // ═══════════════════════════════════════════
+
   new Attacker(6, "Knights", 3, "Disciplined melee warriors.", {
     hp: 180, damage: 35, attackSpeed: 1.5, spawnCount: 1, favoriteTarget: "Any",
     ability: "Lock-on.", disability: "No specialization.", distractedBy: "Nothing."
@@ -121,7 +109,7 @@ const ALL_CARDS: Card[] = [
   }, "/assets/cards/common/spearmen.png"),
 ];
 
-// ── Filtered exports ────────────────────────
+
 export const DEFENSE_CARDS: Card[] = ALL_CARDS.filter(c => c.subType === "defense");
 export const ATTACK_CARDS: Card[] = ALL_CARDS.filter(c => c.subType === "attack");
 export const ALL_CARDS_REGISTRY: Card[] = ALL_CARDS;

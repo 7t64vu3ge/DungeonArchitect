@@ -1,5 +1,3 @@
-// ── Shared types mirroring server domain ────
-
 export type GamePhase = "waiting" | "setup" | "battle" | "finished";
 
 export interface UnitStats {
@@ -49,10 +47,16 @@ export interface PlayerState {
   board: BoardSlot[];
   castleHp: number;
   maxCastleHp: number;
+  castleSlotIndex: number | null;
   mana: number;
   maxMana: number;
   isReady: boolean;
   attackers: ActiveAttacker[];
+}
+
+export interface LogEntry {
+  timestamp: number;
+  message: string;
 }
 
 export interface GameState {
@@ -63,7 +67,7 @@ export interface GameState {
   battleStartTime: number;
   lastTickTime: number;
   winnerId: string | null;
-  logs: { timestamp: number; message: string }[];
+  logs: LogEntry[];
 }
 
 export interface UserProfile {

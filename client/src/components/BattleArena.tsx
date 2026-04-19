@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { GameState, PlayerState, Card, BoardSlot } from "../types/game";
+import BattleLog from "./battle/BattleLog";
+import AttackPicker from "./battle/AttackPicker";
 
 interface BattleArenaProps {
   gameState: GameState;
@@ -18,7 +20,7 @@ export default function BattleArena({
   const [selectedAttackCard, setSelectedAttackCard] = useState<Card | null>(null);
   const logRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll log
+
   useEffect(() => {
     if (logRef.current) {
       logRef.current.scrollTop = logRef.current.scrollHeight;
@@ -41,11 +43,11 @@ export default function BattleArena({
     onPlaceAttacker(selectedAttackCard.id, slotIndex);
   };
 
-  // Get attackers targeting a specific slot on the opponent's board
+
   const getAttackersForSlot = (slotIndex: number) =>
     myPlayer.attackers.filter(a => a.targetSlotIndex === slotIndex);
 
-  // Get opponent's attackers targeting my board
+
   const getEnemyAttackersForSlot = (slotIndex: number) =>
     opponent.attackers.filter(a => a.targetSlotIndex === slotIndex);
 
@@ -61,12 +63,12 @@ export default function BattleArena({
         return (
           <div
             key={i}
-            className={`board-slot ${card ? "filled" : ""}`}
+            className={`board-slot ${card ? "filled" : ""} ${i === player.castleSlotIndex ? "castle-slot" : ""}`}
             onClick={() => isOpponent && handleSlotClick(i)}
             style={isOpponent ? { cursor: selectedAttackCard ? "crosshair" : "default" } : {}}
             title={card ? `${card.name} — HP: ${slot.currentHp}/${slot.maxHp}` : `Empty slot ${i}`}
           >
-            {/* Attacker icons */}
+
             {attackersHere.length > 0 && (
               <div className="attackers-on-slot">
                 {attackersHere.map(atk => {
@@ -102,14 +104,18 @@ export default function BattleArena({
               </>
             ) : (
               <>
-                <img 
-                  src="/assets/cards/card_holder.png" 
-                  alt="Empty Slot" 
-                  className="slot-image" 
-                  style={{ opacity: 0.3, width: "64px", height: "64px" }} 
-                />
+                {i === player.castleSlotIndex ? (
+                  <span style={{ fontSize: "1.2rem", fontWeight: "bold" }}>Castle</span>
+                ) : (
+                  <img 
+                    src="/assets/cards/card_holder.png" 
+                    alt="Empty Slot" 
+                    className="slot-image" 
+                    style={{ opacity: 0.3, width: "85px", height: "85px", objectFit: "contain" }} 
+                  />
+                )}
                 <span style={{ fontSize: "0.65rem", color: "var(--text-muted)", position: "absolute", bottom: "8px" }}>
-                  {isOpponent && selectedAttackCard ? "⚔ Attack here" : "Empty"}
+                  {i === player.castleSlotIndex ? "Castle" : (isOpponent && selectedAttackCard ? "Attack" : "Empty")}
                 </span>
               </>
             )}
@@ -124,13 +130,11 @@ export default function BattleArena({
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16, alignItems: "center" }}>
-      {/* Battle Arena */}
       <div className="battle-arena">
-        {/* My Side */}
         <div className="player-side">
           <div className="player-header">
             <div>
-              <span className="player-name">🛡️ {myPlayer.username} (You)</span>
+              <span className="player-name">{myPlayer.username} (You)</span>
             </div>
             <div className="castle-hp">
               Castle: <span className="hp-value">{Math.floor(myPlayer.castleHp)}</span>
@@ -149,16 +153,14 @@ export default function BattleArena({
           {renderBoard(myPlayer, false)}
         </div>
 
-        {/* Divider */}
         <div className="battle-divider">
           <div className="vs-badge">VS</div>
         </div>
 
-        {/* Opponent Side */}
         <div className="player-side">
           <div className="player-header">
             <div>
-              <span className="player-name">⚔️ {opponent.username}</span>
+              <span className="player-name">{opponent.username}</span>
             </div>
             <div className="castle-hp">
               Castle: <span className="hp-value">{Math.floor(opponent.castleHp)}</span>
@@ -174,52 +176,14 @@ export default function BattleArena({
           {renderBoard(opponent, true)}
         </div>
       </div>
+      <AttackPicker 
+        attackCards={attackCards} 
+        myPlayer={myPlayer} 
+        selectedAttackCard={selectedAttackCard} 
+        onSelectCallback={setSelectedAttackCard} 
+      />
 
-      {/* Attack Card Picker */}
-      <div style={{ width: "100%", maxWidth: 1200 }}>
-        <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)", marginBottom: 8 }}>
-          Select an attack card, then click on opponent's board to deploy:
-        </p>
-        <div className="card-picker">
-          {attackCards.map(card => {
-            const canAfford = myPlayer.mana >= card.cost;
-            return (
-              <div
-                key={card.id}
-                className={`game-card ${selectedAttackCard?.id === card.id ? "selected" : ""}`}
-                onClick={() => canAfford && setSelectedAttackCard(card)}
-                style={{ opacity: canAfford ? 1 : 0.4 }}
-              >
-                <img
-                  src={card.imageUrl || "/assets/cards/placeholders/attack.png"}
-                  alt={card.name}
-                  onError={e => { (e.target as HTMLImageElement).src = "/assets/cards/placeholders/attack.png"; }}
-                />
-                <div className="card-name">{card.name}</div>
-                <div className="card-cost">⚡ {card.cost} mana</div>
-                <div className="card-stats">
-                  HP: {card.unitStats?.hp ?? "?"} | DMG: {card.unitStats?.damage ?? 0}
-                </div>
-                <div className="card-stats">
-                  Speed: {card.unitStats?.attackSpeed ?? "?"}s
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Game Log */}
-      <div style={{ width: "100%", maxWidth: 1200 }}>
-        <h3 style={{ fontSize: "0.9rem", marginBottom: 8, color: "var(--text-secondary)" }}>
-          📜 Battle Log
-        </h3>
-        <div className="game-log" ref={logRef}>
-          {gameState.logs.slice(-30).map((log, i) => (
-            <div key={i} className="log-entry">{log.message}</div>
-          ))}
-        </div>
-      </div>
+      <BattleLog logs={gameState.logs} />
     </div>
   );
 }

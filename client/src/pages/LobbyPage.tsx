@@ -15,7 +15,7 @@ export default function LobbyPage({
   return (
     <div className="page-center">
       <div className="lobby-container">
-        <h1 className="lobby-title">⚔️ Dungeon Architect</h1>
+        <h1 className="lobby-title">Dungeon Architect</h1>
         <p className="lobby-subtitle">Build. Defend. Conquer.</p>
 
         <div className="card-panel" style={{ minWidth: 360 }}>
@@ -44,11 +44,11 @@ export default function LobbyPage({
               onClick={onJoinQueue}
               disabled={!connected}
             >
-              🏰 Find Match
+              Find Match
             </button>
           ) : (
             <div>
-              <div className="queue-status">🔍 Searching for opponent...</div>
+              <div className="queue-status">Searching for opponent...</div>
               <button
                 className="btn btn-ghost"
                 style={{ width: "100%", marginTop: 12 }}

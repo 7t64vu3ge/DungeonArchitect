@@ -23,7 +23,7 @@ export abstract class BaseUnit implements Card {
   }
 
   public getAttackInterval(): number {
-    return (this.unitStats.attackSpeed ?? 2) * 1000; // convert to ms
+    return (this.unitStats.attackSpeed ?? 2) * 1000;
   }
 }
 
