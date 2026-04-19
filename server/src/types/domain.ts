@@ -29,6 +29,7 @@ export interface Card {
   cost: number;
   description?: string;
   unitStats?: UnitStats;
+  imageUrl?: string;
 }
 
 export interface DeckCard {

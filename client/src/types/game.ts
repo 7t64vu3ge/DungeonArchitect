@@ -14,6 +14,7 @@ export interface CardViewModel {
   type: CardType;
   cost: number;
   description?: string;
+  imageUrl?: string;
 }
 
 export interface DungeonElementViewModel {
@@ -21,6 +22,7 @@ export interface DungeonElementViewModel {
   type: CardType;
   cardId: number;
   cardName: string;
+  imageUrl?: string;
 }
 
 export interface DungeonViewModel {

@@ -1,29 +1,27 @@
 import { Card } from "../../types/domain";
+import { Wall, Attacker, Defender } from "./unit-classes";
 
 export const UNIT_REGISTRY: Card[] = [
   // Defense Units
-  {
-    id: 1,
-    name: "Wooden Barricade",
-    type: "room",
-    subType: "defense",
-    cost: 1,
-    description: "Blocks movement paths cheaply.",
-    unitStats: {
+  new Wall(
+    1,
+    "Wooden Barricade",
+    1,
+    "Blocks movement paths cheaply.",
+    {
       hp: 350,
       ability: "Blocks movement paths cheaply.",
       disability: "Weak against siege attacks.",
       distractedBy: "None"
     }
-  },
-  {
-    id: 2,
-    name: "Arrow Tower",
-    type: "trap",
-    subType: "defense",
-    cost: 2,
-    description: "Reliable single-target ranged defence.",
-    unitStats: {
+  ),
+  new Defender(
+    2,
+    "Arrow Tower",
+    "trap",
+    2,
+    "Reliable single-target ranged defence.",
+    {
       hp: 300,
       damage: 35,
       range: 7,
@@ -33,30 +31,27 @@ export const UNIT_REGISTRY: Card[] = [
       disability: "Weak against armored units.",
       distractedBy: "Closest enemy entering range."
     }
-  },
-  {
-    id: 3,
-    name: "Stone Wall",
-    type: "room",
-    subType: "defense",
-    cost: 3,
-    description: "Expensive and static wall with 40% ram resistance.",
-    unitStats: {
+  ),
+  new Wall(
+    3,
+    "Stone Wall",
+    3,
+    "Expensive and static wall with 40% ram resistance.",
+    {
       hp: 750,
       favoriteTarget: "None",
       ability: "40% ram resistance.",
       disability: "Expensive and static.",
       distractedBy: "None"
     }
-  },
-  {
-    id: 4,
-    name: "Cannon Tower",
-    type: "trap",
-    subType: "defense",
-    cost: 4,
-    description: "Anti-siege tower with slow reload.",
-    unitStats: {
+  ),
+  new Defender(
+    4,
+    "Cannon Tower",
+    "trap",
+    4,
+    "Anti-siege tower with slow reload.",
+    {
       hp: 450,
       damage: 90,
       range: 8,
@@ -66,15 +61,14 @@ export const UNIT_REGISTRY: Card[] = [
       disability: "Slow reload.",
       distractedBy: "Retargets nearest siege target first."
     }
-  },
-  {
-    id: 5,
-    name: "Ballista Tower",
-    type: "trap",
-    subType: "defense",
-    cost: 5,
-    description: "Piercing tower effective against line formations and flyers.",
-    unitStats: {
+  ),
+  new Defender(
+    5,
+    "Ballista Tower",
+    "trap",
+    5,
+    "Piercing tower effective against line formations and flyers.",
+    {
       hp: 650,
       damage: 120,
       range: 10,
@@ -84,16 +78,14 @@ export const UNIT_REGISTRY: Card[] = [
       disability: "Slow fire rate.",
       distractedBy: "First aligned target lane."
     }
-  },
+  ),
   // Attacking Units
-  {
-    id: 6,
-    name: "Knights",
-    type: "monster",
-    subType: "attack",
-    cost: 3,
-    description: "Disciplined warriors that lock onto targets.",
-    unitStats: {
+  new Attacker(
+    6,
+    "Knights",
+    3,
+    "Disciplined warriors that lock onto targets.",
+    {
       hp: 180,
       damage: 35,
       spawnCount: 10,
@@ -102,15 +94,13 @@ export const UNIT_REGISTRY: Card[] = [
       disability: "No specialization.",
       distractedBy: "Nothing after lock-on."
     }
-  },
-  {
-    id: 7,
-    name: "Archers",
-    type: "monster",
-    subType: "attack",
-    cost: 2,
-    description: "Fragile long-range attackers.",
-    unitStats: {
+  ),
+  new Attacker(
+    7,
+    "Archers",
+    2,
+    "Fragile long-range attackers.",
+    {
       hp: 90,
       damage: 40,
       range: 7,
@@ -120,15 +110,13 @@ export const UNIT_REGISTRY: Card[] = [
       disability: "Fragile.",
       distractedBy: "Closer enemy troop entering range."
     }
-  },
-  {
-    id: 8,
-    name: "Goblins",
-    type: "monster",
-    subType: "attack",
-    cost: 1,
-    description: "Fast swarm pressure with low individual damage.",
-    unitStats: {
+  ),
+  new Attacker(
+    8,
+    "Goblins",
+    1,
+    "Fast swarm pressure with low individual damage.",
+    {
       hp: 120,
       damage: 18,
       spawnCount: 12,
@@ -137,15 +125,13 @@ export const UNIT_REGISTRY: Card[] = [
       disability: "Weak individual damage.",
       distractedBy: "Lowest HP nearby target."
     }
-  },
-  {
-    id: 9,
-    name: "Medic",
-    type: "monster",
-    subType: "attack",
-    cost: 2,
-    description: "Restores allied troop HP.",
-    unitStats: {
+  ),
+  new Attacker(
+    9,
+    "Medic",
+    2,
+    "Restores allied troop HP.",
+    {
       hp: 160,
       damage: 0, // Heals instead
       spawnCount: 4,
@@ -154,15 +140,13 @@ export const UNIT_REGISTRY: Card[] = [
       disability: "No attack power.",
       distractedBy: "Lowest HP ally nearby."
     }
-  },
-  {
-    id: 10,
-    name: "Battle Ram",
-    type: "monster",
-    subType: "attack",
-    cost: 4,
-    description: "Siege engine that targets defenses and gates.",
-    unitStats: {
+  ),
+  new Attacker(
+    10,
+    "Battle Ram",
+    4,
+    "Siege engine that targets defenses and gates.",
+    {
       hp: 900,
       damage: 180,
       spawnCount: 1,
@@ -171,15 +155,13 @@ export const UNIT_REGISTRY: Card[] = [
       disability: "Ignores troops unless blocked.",
       distractedBy: "Only blockers in path."
     }
-  },
-  {
-    id: 11,
-    name: "Catapult",
-    type: "monster",
-    subType: "attack",
-    cost: 5,
-    description: "Heavy splash damage against buildings.",
-    unitStats: {
+  ),
+  new Attacker(
+    11,
+    "Catapult",
+    5,
+    "Heavy splash damage against buildings.",
+    {
       hp: 500,
       damage: 150,
       range: 12,
@@ -189,15 +171,13 @@ export const UNIT_REGISTRY: Card[] = [
       disability: "Vulnerable in close combat.",
       distractedBy: "Largest building cluster."
     }
-  },
-  {
-    id: 12,
-    name: "Dragon Rider",
-    type: "monster",
-    subType: "attack",
-    cost: 7,
-    description: "Flying unit with continuous flame damage.",
-    unitStats: {
+  ),
+  new Attacker(
+    12,
+    "Dragon Rider",
+    7,
+    "Flying unit with continuous flame damage.",
+    {
       hp: 1200,
       damage: 110, // per sec
       spawnCount: 1,
@@ -206,15 +186,13 @@ export const UNIT_REGISTRY: Card[] = [
       disability: "Vulnerable to ballista towers.",
       distractedBy: "Largest enemy cluster."
     }
-  },
-  {
-    id: 13,
-    name: "Titan Crusher",
-    type: "monster",
-    subType: "attack",
-    cost: 8,
-    description: "Massive structure-destroying unit.",
-    unitStats: {
+  ),
+  new Attacker(
+    13,
+    "Titan Crusher",
+    8,
+    "Massive structure-destroying unit.",
+    {
       hp: 2500,
       damage: 300,
       spawnCount: 1,
@@ -223,5 +201,77 @@ export const UNIT_REGISTRY: Card[] = [
       disability: "Easily swarmed.",
       distractedBy: "Blocking units only."
     }
-  }
+  ),
+  new Defender(
+    14,
+    "Inferno Tower",
+    "trap",
+    5,
+    "Deals increasing damage to a single target. Lethal against giants.",
+    {
+      hp: 1000,
+      damage: 150,
+      range: 6,
+      attackSpeed: 0.1,
+      favoriteTarget: "High HP units",
+      ability: "Damage increases the longer it stays on target.",
+      disability: "Single target only.",
+      distractedBy: "Newest unit in range."
+    },
+    "/assets/cards/epic/inferno_tower.png"
+  ),
+  new Defender(
+    15,
+    "Mortar",
+    "trap",
+    4,
+    "Slow-firing long-range splash damage tower. Vulnerable at close range.",
+    {
+      hp: 600,
+      damage: 120,
+      range: 11,
+      attackSpeed: 5,
+      favoriteTarget: "Ground swarms",
+      ability: "Large splash radius.",
+      disability: "Cannot hit targets closer than 4 units.",
+      distractedBy: "Largest cluster in range."
+    },
+    "/assets/cards/rare/mortar.png"
+  ),
+  new Defender(
+    16,
+    "Tesla Coil",
+    "trap",
+    3,
+    "Zaps multiple enemies at once with chain lightning.",
+    {
+      hp: 400,
+      damage: 45,
+      range: 5,
+      attackSpeed: 2,
+      favoriteTarget: "Multiple targets",
+      ability: "Chain lightning hits up to 3 nearby enemies.",
+      disability: "Low individual damage.",
+      distractedBy: "Closest enemy."
+    },
+    "/assets/cards/rare/tesla_coil.png"
+  ),
+  new Defender(
+    17,
+    "Ice Tower",
+    "trap",
+    2,
+    "Slows enemy movement and attack speed by 35%.",
+    {
+      hp: 350,
+      damage: 15,
+      range: 6,
+      attackSpeed: 1.2,
+      favoriteTarget: "Any",
+      ability: "Slows movement and attack speed by 35%.",
+      disability: "Very low damage.",
+      distractedBy: "Closest enemy."
+    },
+    "/assets/cards/common/ice_tower.png"
+  )
 ];

@@ -1,4 +1,6 @@
-import type { GameSession, PlayerAction } from "../../types/domain";
+import type { GameSession, PlayerAction, DungeonElement } from "../../types/domain";
+import { UNIT_REGISTRY } from "../cards/unit-registry";
+import { Wall } from "../cards/unit-classes";
 
 export interface GameEngine {
   validateMove(game: GameSession, action: PlayerAction): boolean;
@@ -12,7 +14,49 @@ export class DungeonGameEngine implements GameEngine {
       return false;
     }
 
-    return game.currentTurnPlayerId === action.playerId;
+    // Basic turn order check
+    if (game.currentTurnPlayerId !== action.playerId) {
+      return false;
+    }
+
+    // Wall logic: If attacking, check if walls must be broken first
+    if (action.type === "play-card" && action.cardId !== undefined) {
+      const card = UNIT_REGISTRY.find(c => c.id === action.cardId);
+      if (card && card.subType === "attack") {
+        const targetPlayer = game.players.find(p => p.id === action.targetPlayerId);
+        if (targetPlayer && this.getDungeonWalls(targetPlayer.dungeon.elements).length > 0) {
+          // If the action is specifically targeting something behind walls, it could be invalid
+          // For now, we'll just log that walls exist and must be targeted.
+        }
+      }
+    }
+
+    return true;
+  }
+
+  private getDungeonWalls(elements: DungeonElement[]): DungeonElement[] {
+    return elements.filter(el => {
+      const card = UNIT_REGISTRY.find(c => c.id === el.cardId);
+      return card instanceof Wall;
+    });
+  }
+
+  private resolveCombat(attackerId: number, targetPlayerId: number, game: GameSession): string {
+    const attackerCard = UNIT_REGISTRY.find(c => c.id === attackerId);
+    const targetPlayer = game.players.find(p => p.id === targetPlayerId);
+    
+    if (!attackerCard || !targetPlayer) return "Invalid attack";
+
+    const walls = this.getDungeonWalls(targetPlayer.dungeon.elements);
+    
+    if (walls.length > 0) {
+      // Logic: Must break a wall first
+      const firstWall = walls[0];
+      const wallCard = UNIT_REGISTRY.find(c => c.id === firstWall.cardId);
+      return `Attacker ${attackerCard.name} is blocked by ${wallCard?.name}! Must break the wall first.`;
+    }
+
+    return `${attackerCard.name} attacked the dungeon successfully!`;
   }
 
   applyMove(game: GameSession, action: PlayerAction): GameSession {
@@ -40,7 +84,12 @@ export class DungeonGameEngine implements GameEngine {
         // Remove from hand
         player.hand = player.hand.filter(c => c.id !== action.cardId);
         
-        actionDescription = `Player ${action.playerId} played ${card.name}${card.unitStats ? ` (HP: ${card.unitStats.hp})` : ""}`;
+        let combatLog = "";
+        if (card.subType === "attack" && action.targetPlayerId) {
+          combatLog = ` | Combat: ${this.resolveCombat(card.id, action.targetPlayerId, game)}`;
+        }
+
+        actionDescription = `Player ${action.playerId} played ${card.name}${card.unitStats ? ` (HP: ${card.unitStats.hp})` : ""}${combatLog}`;
       }
     }
 
