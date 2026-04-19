@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { io, Socket } from "socket.io-client";
 import { GameState, Card } from "../types/game";
+import { CONFIG } from "../config";
 
 export function useSocket(token: string | null) {
   const socketRef = useRef<Socket | null>(null);
@@ -13,7 +14,7 @@ export function useSocket(token: string | null) {
   useEffect(() => {
     if (!token) return;
 
-    const socket = io("/", {
+    const socket = io(CONFIG.SERVER_URL || "/", {
       auth: { token },
       transports: ["websocket", "polling"],
     });

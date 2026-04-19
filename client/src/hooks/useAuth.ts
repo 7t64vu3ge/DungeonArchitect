@@ -1,7 +1,9 @@
 import { useState, useCallback } from "react";
 import { UserProfile } from "../types/game";
 
-const API_BASE = "/api/auth";
+import { CONFIG } from "../config";
+
+const API_BASE = `${CONFIG.API_BASE}/auth`;
 
 export function useAuth() {
   const [token, setToken] = useState<string | null>(() => localStorage.getItem("da_token"));
