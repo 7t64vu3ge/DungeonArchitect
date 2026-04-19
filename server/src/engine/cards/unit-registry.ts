@@ -1,277 +1,131 @@
 import { Card } from "../../types/domain";
 import { Wall, Attacker, Defender } from "./unit-classes";
 
-export const UNIT_REGISTRY: Card[] = [
-  // Defense Units
-  new Wall(
-    1,
-    "Wooden Barricade",
-    1,
-    "Blocks movement paths cheaply.",
-    {
-      hp: 350,
-      ability: "Blocks movement paths cheaply.",
-      disability: "Weak against siege attacks.",
-      distractedBy: "None"
-    }
-  ),
-  new Defender(
-    2,
-    "Arrow Tower",
-    "trap",
-    2,
-    "Reliable single-target ranged defence.",
-    {
-      hp: 300,
-      damage: 35,
-      range: 7,
-      attackSpeed: 1.5,
-      favoriteTarget: "Any",
-      ability: "Reliable single-target ranged defence.",
-      disability: "Weak against armored units.",
-      distractedBy: "Closest enemy entering range."
-    }
-  ),
-  new Wall(
-    3,
-    "Stone Wall",
-    3,
-    "Expensive and static wall with 40% ram resistance.",
-    {
-      hp: 750,
-      favoriteTarget: "None",
-      ability: "40% ram resistance.",
-      disability: "Expensive and static.",
-      distractedBy: "None"
-    }
-  ),
-  new Defender(
-    4,
-    "Cannon Tower",
-    "trap",
-    4,
-    "Anti-siege tower with slow reload.",
-    {
-      hp: 450,
-      damage: 90,
-      range: 8,
-      attackSpeed: 3,
-      favoriteTarget: "Siege Units",
-      ability: "+50% damage vs siege.",
-      disability: "Slow reload.",
-      distractedBy: "Retargets nearest siege target first."
-    }
-  ),
-  new Defender(
-    5,
-    "Ballista Tower",
-    "trap",
-    5,
-    "Piercing tower effective against line formations and flyers.",
-    {
-      hp: 650,
-      damage: 120,
-      range: 10,
-      attackSpeed: 3.5,
-      favoriteTarget: "Line formations / Flyers",
-      ability: "Pierces 4 enemies.",
-      disability: "Slow fire rate.",
-      distractedBy: "First aligned target lane."
-    }
-  ),
-  // Attacking Units
-  new Attacker(
-    6,
-    "Knights",
-    3,
-    "Disciplined warriors that lock onto targets.",
-    {
-      hp: 180,
-      damage: 35,
-      spawnCount: 10,
-      favoriteTarget: "Any",
-      ability: "Locks onto first target until destroyed.",
-      disability: "No specialization.",
-      distractedBy: "Nothing after lock-on."
-    }
-  ),
-  new Attacker(
-    7,
-    "Archers",
-    2,
-    "Fragile long-range attackers.",
-    {
-      hp: 90,
-      damage: 40,
-      range: 7,
-      spawnCount: 8,
-      favoriteTarget: "Any",
-      ability: "Long-range attacks.",
-      disability: "Fragile.",
-      distractedBy: "Closer enemy troop entering range."
-    }
-  ),
-  new Attacker(
-    8,
-    "Goblins",
-    1,
-    "Fast swarm pressure with low individual damage.",
-    {
-      hp: 120,
-      damage: 18,
-      spawnCount: 12,
-      favoriteTarget: "Any",
-      ability: "Fast swarm pressure.",
-      disability: "Weak individual damage.",
-      distractedBy: "Lowest HP nearby target."
-    }
-  ),
-  new Attacker(
-    9,
-    "Medic",
-    2,
-    "Restores allied troop HP.",
-    {
-      hp: 160,
-      damage: 0, // Heals instead
-      spawnCount: 4,
-      favoriteTarget: "Allied wounded units",
-      ability: "Restores allied troop HP (Heal: 25).",
-      disability: "No attack power.",
-      distractedBy: "Lowest HP ally nearby."
-    }
-  ),
-  new Attacker(
-    10,
-    "Battle Ram",
-    4,
-    "Siege engine that targets defenses and gates.",
-    {
-      hp: 900,
-      damage: 180,
-      spawnCount: 1,
-      favoriteTarget: "Defences / Gates",
-      ability: "Double damage to walls/gates.",
-      disability: "Ignores troops unless blocked.",
-      distractedBy: "Only blockers in path."
-    }
-  ),
-  new Attacker(
-    11,
-    "Catapult",
-    5,
-    "Heavy splash damage against buildings.",
-    {
-      hp: 500,
-      damage: 150,
-      range: 12,
-      spawnCount: 1,
-      favoriteTarget: "Buildings",
-      ability: "Splash damage, +50% damage to buildings.",
-      disability: "Vulnerable in close combat.",
-      distractedBy: "Largest building cluster."
-    }
-  ),
-  new Attacker(
-    12,
-    "Dragon Rider",
-    7,
-    "Flying unit with continuous flame damage.",
-    {
-      hp: 1200,
-      damage: 110, // per sec
-      spawnCount: 1,
-      favoriteTarget: "Any clustered target",
-      ability: "Flies over walls.",
-      disability: "Vulnerable to ballista towers.",
-      distractedBy: "Largest enemy cluster."
-    }
-  ),
-  new Attacker(
-    13,
-    "Titan Crusher",
-    8,
-    "Massive structure-destroying unit.",
-    {
-      hp: 2500,
-      damage: 300,
-      spawnCount: 1,
-      favoriteTarget: "Buildings",
-      ability: "Triple damage to structures.",
-      disability: "Easily swarmed.",
-      distractedBy: "Blocking units only."
-    }
-  ),
-  new Defender(
-    14,
-    "Inferno Tower",
-    "trap",
-    5,
-    "Deals increasing damage to a single target. Lethal against giants.",
-    {
-      hp: 1000,
-      damage: 150,
-      range: 6,
-      attackSpeed: 0.1,
-      favoriteTarget: "High HP units",
-      ability: "Damage increases the longer it stays on target.",
-      disability: "Single target only.",
-      distractedBy: "Newest unit in range."
-    },
-    "/assets/cards/epic/inferno_tower.png"
-  ),
-  new Defender(
-    15,
-    "Mortar",
-    "trap",
-    4,
-    "Slow-firing long-range splash damage tower. Vulnerable at close range.",
-    {
-      hp: 600,
-      damage: 120,
-      range: 11,
-      attackSpeed: 5,
-      favoriteTarget: "Ground swarms",
-      ability: "Large splash radius.",
-      disability: "Cannot hit targets closer than 4 units.",
-      distractedBy: "Largest cluster in range."
-    },
-    "/assets/cards/rare/mortar.png"
-  ),
-  new Defender(
-    16,
-    "Tesla Coil",
-    "trap",
-    3,
-    "Zaps multiple enemies at once with chain lightning.",
-    {
-      hp: 400,
-      damage: 45,
-      range: 5,
-      attackSpeed: 2,
-      favoriteTarget: "Multiple targets",
-      ability: "Chain lightning hits up to 3 nearby enemies.",
-      disability: "Low individual damage.",
-      distractedBy: "Closest enemy."
-    },
-    "/assets/cards/rare/tesla_coil.png"
-  ),
-  new Defender(
-    17,
-    "Ice Tower",
-    "trap",
-    2,
-    "Slows enemy movement and attack speed by 35%.",
-    {
-      hp: 350,
-      damage: 15,
-      range: 6,
-      attackSpeed: 1.2,
-      favoriteTarget: "Any",
-      ability: "Slows movement and attack speed by 35%.",
-      disability: "Very low damage.",
-      distractedBy: "Closest enemy."
-    },
-    "/assets/cards/common/ice_tower.png"
-  )
+// ── All cards in the game ───────────────────
+// Sprite mapping:
+//   common: archer, goblin, knight, medic, spearmen, ice_tower
+//   rare: battleram, cavalryrider, firethrower, shieldguard, mortar, tesla_coil
+//   epic: assassins, catapult, warelephant, inferno_tower
+//   placeholders: wall, attack, trap
+
+const ALL_CARDS: Card[] = [
+  // ═══════════════════════════════════════════
+  // DEFENSE CARDS
+  // ═══════════════════════════════════════════
+  new Wall(1, "Wooden Barricade", 1, "Blocks movement paths cheaply.", {
+    hp: 350, damage: 0, attackSpeed: 0,
+    ability: "Blocks movement.", disability: "Weak vs siege.", distractedBy: "None"
+  }, "/assets/cards/placeholders/wall.png"),
+
+  new Defender(2, "Arrow Tower", "trap", 2, "Reliable single-target ranged defence.", {
+    hp: 300, damage: 35, range: 7, attackSpeed: 1.5, favoriteTarget: "Any",
+    ability: "Single-target ranged.", disability: "Weak vs armored.", distractedBy: "Closest enemy."
+  }, "/assets/cards/placeholders/trap.png"),
+
+  new Wall(3, "Stone Wall", 3, "High-HP wall with ram resistance.", {
+    hp: 750, damage: 0, attackSpeed: 0,
+    ability: "40% ram resistance.", disability: "Expensive.", distractedBy: "None"
+  }, "/assets/cards/placeholders/wall.png"),
+
+  new Defender(4, "Cannon Tower", "trap", 4, "Anti-siege tower.", {
+    hp: 450, damage: 90, range: 8, attackSpeed: 3, favoriteTarget: "Siege",
+    ability: "+50% vs siege.", disability: "Slow reload.", distractedBy: "Nearest siege."
+  }, "/assets/cards/placeholders/trap.png"),
+
+  new Defender(5, "Ballista Tower", "trap", 5, "Piercing tower.", {
+    hp: 650, damage: 120, range: 10, attackSpeed: 3.5, favoriteTarget: "Line/Flyers",
+    ability: "Pierces 4 enemies.", disability: "Slow fire rate.", distractedBy: "First lane."
+  }, "/assets/cards/placeholders/trap.png"),
+
+  new Defender(14, "Inferno Tower", "trap", 5, "Increasing damage single target.", {
+    hp: 1000, damage: 50, range: 6, attackSpeed: 1.0, favoriteTarget: "High HP",
+    ability: "Damage increases over time.", disability: "Single target.", distractedBy: "Newest unit."
+  }, "/assets/cards/epic/inferno_tower.png"),
+
+  new Defender(15, "Mortar", "trap", 4, "Long-range splash damage.", {
+    hp: 600, damage: 120, range: 11, attackSpeed: 5, favoriteTarget: "Swarms",
+    ability: "Large splash radius.", disability: "Blind spot at close range.", distractedBy: "Largest cluster."
+  }, "/assets/cards/rare/mortar.png"),
+
+  new Defender(16, "Tesla Coil", "trap", 3, "Chain lightning.", {
+    hp: 400, damage: 45, range: 5, attackSpeed: 2, favoriteTarget: "Multiple",
+    ability: "Chains to 3 enemies.", disability: "Low damage.", distractedBy: "Closest."
+  }, "/assets/cards/rare/tesla_coil.png"),
+
+  new Defender(17, "Ice Tower", "trap", 2, "Slows enemies.", {
+    hp: 350, damage: 15, range: 6, attackSpeed: 1.2, favoriteTarget: "Any",
+    ability: "Slows 35%.", disability: "Very low damage.", distractedBy: "Closest."
+  }, "/assets/cards/common/ice_tower.png"),
+
+  // ═══════════════════════════════════════════
+  // ATTACK CARDS
+  // ═══════════════════════════════════════════
+  new Attacker(6, "Knights", 3, "Disciplined melee warriors.", {
+    hp: 180, damage: 35, attackSpeed: 1.5, spawnCount: 1, favoriteTarget: "Any",
+    ability: "Lock-on.", disability: "No specialization.", distractedBy: "Nothing."
+  }, "/assets/cards/common/knight.png"),
+
+  new Attacker(7, "Archers", 2, "Fragile ranged attackers.", {
+    hp: 90, damage: 40, range: 7, attackSpeed: 1.8, spawnCount: 1, favoriteTarget: "Any",
+    ability: "Long-range.", disability: "Fragile.", distractedBy: "Closer enemy."
+  }, "/assets/cards/common/archer.png"),
+
+  new Attacker(8, "Goblins", 1, "Fast cheap swarm.", {
+    hp: 120, damage: 18, attackSpeed: 0.8, spawnCount: 1, favoriteTarget: "Any",
+    ability: "Fast swarm.", disability: "Weak damage.", distractedBy: "Low HP."
+  }, "/assets/cards/common/goblin.png"),
+
+  new Attacker(9, "Medic", 2, "Heals allied attackers.", {
+    hp: 160, damage: 0, attackSpeed: 2, spawnCount: 1, favoriteTarget: "Allied wounded",
+    ability: "Heals allies (25 HP).", disability: "No attack.", distractedBy: "Low HP ally."
+  }, "/assets/cards/common/medic.png"),
+
+  new Attacker(10, "Battle Ram", 4, "Siege engine for walls.", {
+    hp: 900, damage: 180, attackSpeed: 3, spawnCount: 1, favoriteTarget: "Walls/Gates",
+    ability: "2x vs walls.", disability: "Ignores troops.", distractedBy: "Blockers."
+  }, "/assets/cards/rare/battleram.png"),
+
+  new Attacker(18, "Shield Guard", 3, "Tanky frontline unit.", {
+    hp: 600, damage: 25, attackSpeed: 2, spawnCount: 1, favoriteTarget: "Any",
+    ability: "High HP tank.", disability: "Low damage.", distractedBy: "Closest."
+  }, "/assets/cards/rare/shieldguard.png"),
+
+  new Attacker(19, "Cavalry Rider", 4, "Fast mounted warrior.", {
+    hp: 350, damage: 85, attackSpeed: 1.5, spawnCount: 1, favoriteTarget: "Any",
+    ability: "Charge: 2x first hit.", disability: "Fragile after charge.", distractedBy: "Nearest."
+  }, "/assets/cards/rare/cavalryrider.png"),
+
+  new Attacker(20, "Fire Thrower", 3, "Area damage specialist.", {
+    hp: 200, damage: 60, attackSpeed: 2, spawnCount: 1, favoriteTarget: "Clusters",
+    ability: "Splash fire damage.", disability: "Low HP.", distractedBy: "Largest group."
+  }, "/assets/cards/rare/firethrower.png"),
+
+  new Attacker(11, "Catapult", 5, "Splash vs buildings.", {
+    hp: 500, damage: 150, range: 12, attackSpeed: 4, spawnCount: 1, favoriteTarget: "Buildings",
+    ability: "Splash, +50% vs buildings.", disability: "Weak melee.", distractedBy: "Clusters."
+  }, "/assets/cards/epic/catapult.png"),
+
+  new Attacker(12, "War Elephant", 7, "Heavy trampling unit.", {
+    hp: 1200, damage: 110, attackSpeed: 1, spawnCount: 1, favoriteTarget: "Any",
+    ability: "Tramples units.", disability: "Slow movement.", distractedBy: "Clusters."
+  }, "/assets/cards/epic/warelephant.png"),
+
+  new Attacker(13, "Assassins", 6, "Stealth high-damage strike.", {
+    hp: 400, damage: 250, attackSpeed: 3, spawnCount: 1, favoriteTarget: "Towers",
+    ability: "Invisible for 3s.", disability: "Fragile once revealed.", distractedBy: "None."
+  }, "/assets/cards/epic/assassins.png"),
+
+  new Attacker(21, "Spearmen", 2, "Anti-cavalry infantry.", {
+    hp: 150, damage: 30, attackSpeed: 1.2, spawnCount: 1, favoriteTarget: "Any",
+    ability: "+50% vs cavalry.", disability: "Average stats.", distractedBy: "Closest."
+  }, "/assets/cards/common/spearmen.png"),
 ];
+
+// ── Filtered exports ────────────────────────
+export const DEFENSE_CARDS: Card[] = ALL_CARDS.filter(c => c.subType === "defense");
+export const ATTACK_CARDS: Card[] = ALL_CARDS.filter(c => c.subType === "attack");
+export const ALL_CARDS_REGISTRY: Card[] = ALL_CARDS;
+
+export function getCardById(id: number): Card | undefined {
+  return ALL_CARDS.find(c => c.id === id);
+}

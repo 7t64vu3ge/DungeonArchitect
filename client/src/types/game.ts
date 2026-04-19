@@ -1,63 +1,75 @@
-export type CardType = "room" | "trap" | "monster" | "disaster";
+// ── Shared types mirroring server domain ────
 
-export type GameStatus = "waiting" | "active" | "completed" | "abandoned";
+export type GamePhase = "waiting" | "setup" | "battle" | "finished";
 
-export interface UserProfile {
-  id: number;
-  username: string;
-  email: string;
+export interface UnitStats {
+  hp: number;
+  damage?: number;
+  range?: number;
+  attackSpeed?: number;
+  spawnCount?: number;
+  favoriteTarget?: string;
+  ability?: string;
+  disability?: string;
+  distractedBy?: string;
 }
 
-export interface CardViewModel {
+export interface Card {
   id: number;
   name: string;
-  type: CardType;
+  type: string;
+  subType?: "defense" | "attack";
   cost: number;
   description?: string;
+  unitStats?: UnitStats;
   imageUrl?: string;
 }
 
-export interface DungeonElementViewModel {
-  id: number;
-  type: CardType;
+export interface BoardSlot {
+  index: number;
+  cardId: number | null;
+  currentHp: number;
+  maxHp: number;
+  lastAttackTime: number;
+}
+
+export interface ActiveAttacker {
+  uid: string;
   cardId: number;
-  cardName: string;
-  imageUrl?: string;
+  currentHp: number;
+  maxHp: number;
+  targetSlotIndex: number;
+  lastAttackTime: number;
+  ownerId: string;
 }
 
-export interface DungeonViewModel {
-  id: number;
-  health: number;
-  elements: DungeonElementViewModel[];
-}
-
-export interface PlayerViewModel {
-  id: number;
-  userId: number;
+export interface PlayerState {
+  userId: string;
   username: string;
-  health: number;
-  hand: CardViewModel[];
-  dungeon: DungeonViewModel;
-  isCurrentTurn: boolean;
+  board: BoardSlot[];
+  castleHp: number;
+  maxCastleHp: number;
+  mana: number;
+  maxMana: number;
+  isReady: boolean;
+  attackers: ActiveAttacker[];
 }
 
-export interface GameLogViewModel {
-  id: number;
-  action: string;
-  createdAt: string;
+export interface GameState {
+  gameId: string;
+  phase: GamePhase;
+  players: [PlayerState, PlayerState];
+  setupDeadline: number;
+  battleStartTime: number;
+  lastTickTime: number;
+  winnerId: string | null;
+  logs: { timestamp: number; message: string }[];
 }
 
-export interface GameSessionViewModel {
-  id: number;
-  status: GameStatus;
-  currentTurnPlayerId: number | null;
-  players: PlayerViewModel[];
-  logs: GameLogViewModel[];
-}
-
-export interface PlayCardAction {
-  gameId: number;
-  playerId: number;
-  cardId: number;
-  targetPlayerId?: number;
+export interface UserProfile {
+  id: string;
+  username: string;
+  email: string;
+  wins: number;
+  losses: number;
 }

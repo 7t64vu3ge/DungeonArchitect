@@ -1,19 +1,16 @@
+// ──────────────────────────────────────────────
+// Domain types for Dungeon Architect
+// ──────────────────────────────────────────────
+
 export type CardType = "room" | "trap" | "monster" | "disaster";
+export type GamePhase = "waiting" | "setup" | "battle" | "finished";
 
-export type GameStatus = "waiting" | "active" | "completed" | "abandoned";
-
-export interface User {
-  id: number;
-  username: string;
-  email: string;
-  passwordHash: string;
-}
-
+// ── Unit Stats ──────────────────────────────
 export interface UnitStats {
   hp: number;
   damage?: number;
   range?: number;
-  attackSpeed?: number;
+  attackSpeed?: number;   // seconds between attacks
   spawnCount?: number;
   favoriteTarget?: string;
   ability?: string;
@@ -21,6 +18,7 @@ export interface UnitStats {
   distractedBy?: string;
 }
 
+// ── Card definition (static template) ───────
 export interface Card {
   id: number;
   name: string;
@@ -32,64 +30,54 @@ export interface Card {
   imageUrl?: string;
 }
 
-export interface DeckCard {
-  id: number;
-  deckId: number;
-  cardId: number;
-  position: number;
+// ── Board slot (runtime, in a game) ─────────
+export interface BoardSlot {
+  index: number;          // 0-5 in a 3×2 grid
+  cardId: number | null;  // registry card ID placed here
+  currentHp: number;
+  maxHp: number;
+  lastAttackTime: number; // timestamp of last attack tick
 }
 
-export interface Deck {
-  id: number;
-  gameId: number;
-  cards: DeckCard[];
+// ── Active attacker on the field ────────────
+export interface ActiveAttacker {
+  uid: string;            // unique runtime ID
+  cardId: number;         // registry card
+  currentHp: number;
+  maxHp: number;
+  targetSlotIndex: number; // which defense slot it's attacking
+  lastAttackTime: number;
+  ownerId: string;        // the player who deployed it
 }
 
-export interface DungeonElement {
-  id: number;
-  dungeonId: number;
-  type: CardType;
-  cardId: number;
+// ── Per-player game state ───────────────────
+export interface PlayerState {
+  oddsPlayed?: number;
+  userId: string;
+  username: string;
+  board: BoardSlot[];     // 6 slots (3×2 grid)
+  castleHp: number;
+  maxCastleHp: number;
+  mana: number;
+  maxMana: number;
+  isReady: boolean;       // finished setup?
+  attackers: ActiveAttacker[]; // attackers deployed BY this player onto the opponent
 }
 
-export interface Dungeon {
-  id: number;
-  playerId: number;
-  health: number;
-  elements: DungeonElement[];
+// ── Full game state ─────────────────────────
+export interface GameState {
+  gameId: string;
+  phase: GamePhase;
+  players: [PlayerState, PlayerState];
+  setupDeadline: number;  // timestamp when setup ends
+  battleStartTime: number;
+  lastTickTime: number;
+  winnerId: string | null;
+  logs: GameLogEntry[];
 }
 
-export interface Player {
-  id: number;
-  userId: number;
-  gameId: number;
-  health: number;
-  hand: Card[];
-  dungeon: Dungeon;
-}
-
-export interface GameLog {
-  id: number;
-  gameId: number;
-  action: string;
-  createdAt: Date;
-}
-
-export interface GameSession {
-  id: number;
-  status: GameStatus;
-  currentTurnPlayerId: number | null;
-  players: Player[];
-  deck: Deck;
-  logs: GameLog[];
-  createdAt: Date;
-  endedAt: Date | null;
-}
-
-export interface PlayerAction {
-  gameId: number;
-  playerId: number;
-  type: "play-card" | "end-turn" | "draw-card" | "leave-game";
-  cardId?: number;
-  targetPlayerId?: number;
+// ── Log entry ───────────────────────────────
+export interface GameLogEntry {
+  timestamp: number;
+  message: string;
 }

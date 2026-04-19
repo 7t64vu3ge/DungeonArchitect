@@ -1,0 +1,1 @@
+{"version":3,"file":"unit-registry.d.ts","sourceRoot":"","sources":["../../../src/engine/cards/unit-registry.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,IAAI,EAAE,MAAM,oBAAoB,CAAC;AA4H1C,eAAO,MAAM,aAAa,EAAE,IAAI,EAAmD,CAAC;AACpF,eAAO,MAAM,YAAY,EAAE,IAAI,EAAkD,CAAC;AAClF,eAAO,MAAM,kBAAkB,EAAE,IAAI,EAAc,CAAC;AAEpD,wBAAgB,WAAW,CAAC,EAAE,EAAE,MAAM,GAAG,IAAI,GAAG,SAAS,CAExD"}
